@@ -1,0 +1,3 @@
+hid
+pyautogui
+alsaaudio
