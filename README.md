@@ -34,7 +34,7 @@ You may need to adjust the device ID according to your hardware revision. Run `s
 ### Control Software
 Install the necessary python packages (requirements.txt).
 ```
-sudo apt install python3-tk python3-dev python3-alsaaudio
+sudo apt install python3-tk python3-dev python3-alsaaudio libhidapi-hidraw0
 sudo pip3 install pyautogui hid
 ```
 
