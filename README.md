@@ -11,7 +11,7 @@ On the back, a tripod socket was implemented.
 ### Infrared (IR) Pen
 A infrared pen can be easily built. Besides a solder station, you just need:
 - an old whiteboard marker
-- IR LED
+- IR LED (better 940nm than 850nm)
 - flat pushbutton
 - AAA battery holder
 
@@ -22,20 +22,50 @@ The result may look like this:
 The activeboard feature works well with any common digital projector on white walls or canvas, and also with LC displays if the IR LED is bright enough.
 
 ## Software Setup
-### Bluetooth connection and udev Rules
-Connect your Wiimote via Bluetooth (do not pair). This works via GUI ("blueman-manager" in Linux Mint) or using the command line `bluetoothctl`.
+### Bluetooth connection
+The Wiimote requires to set `ClassicBondedOnly=false` in `/etc/bluetooth/input.conf`. Restart the bluetooth service.
 
-Allow non-root users communication with the USB device. Create the file `/etc/udev/rules.d/99-wiimote.rules` with the following content and run `udevadm trigger`.
+Make sure that you have the Wiimote HID kernel module loaded via `modprobe hid-wiimote`.
+
+Now, connect your Wiimote via Bluetooth (do not pair). This works via GUI ("blueman-manager" in Linux Mint) or using the command line `bluetoothctl`.
+
+In `bluetoothctl`:
+1. type `scan on`
+2. press buttons 1 & 2 on Wiimote
+3. then type `connect ca:ff:ee:ca:ff:ee` (where ca:ff:ee:ca:ff:ee is the address of your Wiimote you see in bluetoothctl)
+
+### udev Rules
+Allow non-root users communication with the USB device. Create the file `/etc/udev/rules.d/99-wiimote.rules` with the following content, then run `udevadm trigger`.
 ```
+KERNELS=="0005:057E:0306.*", MODE="0666"
 KERNELS=="0005:057E:0330.*", MODE="0666"
 ```
-You may need to adjust the device ID according to your hardware revision. Run `sudo udevadm monitor` when connecting and look for a similar device name below `/devices/virtual/misc/uhid/`.
+(The device ID `0306` is for the first Wiimote hardware revision while `0330` is for the second.)
+
+<details>
+<summary>Troubleshooting</summary>
+
+Run `sudo udevadm monitor` when connecting and look for device IDs below `/devices/virtual/misc/uhid/`. Add your ID to `99-wiimote.rules` if it differs from the two given in this guide.
+
+Your Wiimote must show up below `$ ls /sys/bus/hid/drivers/wiimote/`, otherwise, Wiimote4Linux will not work.
+```
+0005:057E:0330.000A  bind  module  new_id  uevent  unbind
+```
+
+By installing the `xwiimote` package, you can execute `xwiishow list` and `xwiishow 1`. It should display the current button status, visible IR dots etc.
+</details>
 
 ### Control Software
-Install the necessary python packages (requirements.txt).
+Install the necessary python packages (requirements.txt). It is recommended to do this in a venv nowadays:
 ```
-sudo apt install python3-tk python3-dev python3-alsaaudio libhidapi-hidraw0
-sudo pip3 install pyautogui hid
+sudo apt install python3-tk python3-pyqt5 python3-dev python3-venv python3-alsaaudio libhidapi-hidraw0
+
+# create venv with necessary Python modules
+python3 -m venv venv --system-site-packages
+venv/bin/pip install -r requirements.txt
+
+# launch the software
+venv/bin/python3 wiimote4linux.py
 ```
 
 ## Usage

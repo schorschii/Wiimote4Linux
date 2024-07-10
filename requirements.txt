@@ -1,3 +1,4 @@
 hid
 pyautogui
-alsaaudio
+pyqt5
+#alsaaudio
